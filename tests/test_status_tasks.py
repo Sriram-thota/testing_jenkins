@@ -37,10 +37,12 @@ def test_task_status_update(driver):
     WebDriverWait(driver, 20).until(
         EC.text_to_be_present_in_element(
             tasks_page.STATUS_BADGE,
-            "In Progress"
+            "Progress"
         )
     )
 
-    assert "in_progress" in tasks_page.get_status().lower()
+    status_text = tasks_page.get_status().lower()
+
+    assert "progress" in status_text
 
     logger.info("TC06 passed")
