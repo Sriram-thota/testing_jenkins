@@ -5,14 +5,20 @@ from pages.base_page import BasePage
 
 class ProjectsPage(BasePage):
 
-    NEW_PROJECT_BUTTON = (By.XPATH, "//button[contains(.,'New Project')]")
-
-    PROJECT_NAME_INPUT = (
+    NEW_PROJECT_BUTTON = (
         By.XPATH,
-        "//input[contains(@placeholder,'Project') or contains(@name,'title')]"
+        "//button[.//i[contains(@class,'bi-plus-circle')]]"
     )
 
-    SAVE_BUTTON = (By.XPATH, "//button[contains(.,'Create') or contains(.,'Save')]")
+    PROJECT_TITLE_INPUT = (
+        By.XPATH,
+        "//input[@placeholder='Title']"
+    )
+
+    CREATE_BUTTON = (
+        By.XPATH,
+        "//button[contains(.,'Create')]"
+    )
 
     PROJECT_TABLE = (By.XPATH, "//table")
 
@@ -25,18 +31,19 @@ class ProjectsPage(BasePage):
 
         # wait for modal input
         self.wait.until(
-            EC.visibility_of_element_located(self.PROJECT_NAME_INPUT)
+            EC.visibility_of_element_located(self.PROJECT_TITLE_INPUT)
         )
 
         # enter project name
-        self.find(self.PROJECT_NAME_INPUT).send_keys(project_name)
+        self.find(self.PROJECT_TITLE_INPUT).clear()
+        self.find(self.PROJECT_TITLE_INPUT).send_keys(project_name)
 
-        # click Save/Create
+        # click Create
         self.wait.until(
-            EC.element_to_be_clickable(self.SAVE_BUTTON)
+            EC.element_to_be_clickable(self.CREATE_BUTTON)
         ).click()
 
-        # wait for table refresh
+        # wait for table reload
         self.wait.until(
             EC.visibility_of_element_located(self.PROJECT_TABLE)
         )
