@@ -1,38 +1,39 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
-from pages.base_page import BasePage
 from selenium.webdriver.support import expected_conditions as EC
+from pages.base_page import BasePage
 
 
 class ProjectsPage(BasePage):
 
-    NEW_PROJECT_BUTTON = (By.XPATH, "//button[contains(.,'New Project')]")
+    CREATE_BUTTON = (By.XPATH, "//button[contains(.,'Create')]")
+    PROJECT_NAME_INPUT = (By.XPATH, "//input[@placeholder='Project Name']")
+    SAVE_BUTTON = (By.XPATH, "//button[contains(.,'Save')]")
 
-    TITLE_INPUT = (By.XPATH, "//label[text()='Title']/following::input[1]")
-    DESCRIPTION_INPUT = (By.XPATH, "//label[text()='Description']/following::textarea[1]")
-    STATUS_DROPDOWN = (By.XPATH, "//label[text()='Status']/following::select[1]")
+    PROJECT_TABLE = (By.XPATH, "//table")
 
-    SAVE_BUTTON = (By.XPATH, "//div[contains(@class,'modal-body')]//button[contains(.,'Save')]")
-    def click_new_project(self):
-        self.click(self.NEW_PROJECT_BUTTON)
+    def create_project(self, project_name):
 
-    def enter_title(self, title):
-        self.type(self.TITLE_INPUT, title)
+        self.click(self.CREATE_BUTTON)
 
-    def enter_description(self, description):
-        self.type(self.DESCRIPTION_INPUT, description)
-
-    def select_status(self, status):
-        dropdown = Select(self.find(self.STATUS_DROPDOWN))
-        dropdown.select_by_value(status)
-
-    def click_save(self):
-        button = self.wait.until(
-            EC.element_to_be_clickable(self.SAVE_BUTTON)
+        self.wait.until(
+            EC.visibility_of_element_located(self.PROJECT_NAME_INPUT)
         )
-        button.click()
+
+        self.find(self.PROJECT_NAME_INPUT).send_keys(project_name)
+
+        self.click(self.SAVE_BUTTON)
+
+        # wait for table to reload
+        self.wait.until(
+            EC.visibility_of_element_located(self.PROJECT_TABLE)
+        )
 
     def is_project_visible(self, project_name):
-        locator = (By.XPATH, f"//div[@class='fw-semibold' and contains(text(),'{project_name}')]")
-        elements = self.driver.find_elements(*locator)
-        return len(elements) > 0
+
+        rows = self.driver.find_elements(By.XPATH, "//table//tbody//tr")
+
+        for row in rows:
+            if project_name.lower() in row.text.lower():
+                return True
+
+        return False
