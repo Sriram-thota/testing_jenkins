@@ -3,7 +3,7 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'master', url: 'https://github.com/Sriram-thota/testing_jenkins.git'
             }
@@ -26,9 +26,23 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                bat 'venv\\Scripts\\pytest tests'
+                bat 'venv\\Scripts\\pytest tests --alluredir=allure-results --junitxml=reports/junit.xml'
             }
         }
 
+        stage('Allure Report') {
+            steps {
+                powershell '''
+                allure serve allure-results
+                '''
+            }
+        }
+
+    }
+
+    post {
+        always {
+            junit 'reports/junit.xml'
+        }
     }
 }
