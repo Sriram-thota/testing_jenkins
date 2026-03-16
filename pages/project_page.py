@@ -5,15 +5,15 @@ from pages.base_page import BasePage
 
 class ProjectsPage(BasePage):
 
-    CREATE_BUTTON = (By.XPATH, "//button[contains(.,'Create')]")
-    PROJECT_NAME_INPUT = (By.XPATH, "//input[@placeholder='Project Name']")
+    NEW_PROJECT_BUTTON = (By.XPATH, "//button[contains(.,'New Project')]")
+    PROJECT_NAME_INPUT = (By.XPATH, "//input[contains(@placeholder,'Project')]")
     SAVE_BUTTON = (By.XPATH, "//button[contains(.,'Save')]")
 
     PROJECT_TABLE = (By.XPATH, "//table")
 
     def create_project(self, project_name):
 
-        self.click(self.CREATE_BUTTON)
+        self.click(self.NEW_PROJECT_BUTTON)
 
         self.wait.until(
             EC.visibility_of_element_located(self.PROJECT_NAME_INPUT)
@@ -23,7 +23,6 @@ class ProjectsPage(BasePage):
 
         self.click(self.SAVE_BUTTON)
 
-        # wait for table to reload
         self.wait.until(
             EC.visibility_of_element_located(self.PROJECT_TABLE)
         )
