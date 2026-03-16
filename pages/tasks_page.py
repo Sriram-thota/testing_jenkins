@@ -25,13 +25,13 @@ class TasksPage(BasePage):
         dropdown = Select(self.find(self.STATUS_DROPDOWN))
         dropdown.select_by_value(status)
 
-   def save_task(self):
+    def save_task(self):
         self.click(self.SAVE_BUTTON)
 
-    # wait until table updates
+        # wait until table updates
         self.wait.until(
-        EC.visibility_of_element_located(self.STATUS_BADGE)
-    )
+            EC.visibility_of_element_located(self.STATUS_BADGE)
+        )
 
     def get_status(self):
         # always re-find the badge to avoid stale element
