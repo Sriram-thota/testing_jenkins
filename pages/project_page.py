@@ -5,20 +5,12 @@ from pages.base_page import BasePage
 
 class ProjectsPage(BasePage):
 
-    NEW_PROJECT_BUTTON = (
-        By.XPATH,
-        "//button[.//i[contains(@class,'bi-plus-circle')]]"
-    )
+    NEW_PROJECT_BUTTON = (By.XPATH, "//button[contains(.,'New Project')]")
 
-    PROJECT_TITLE_INPUT = (
-        By.XPATH,
-        "//input[@placeholder='Title']"
-    )
+    # any visible text input inside modal
+    PROJECT_INPUT = (By.XPATH, "//input[@type='text']")
 
-    CREATE_BUTTON = (
-        By.XPATH,
-        "//button[contains(.,'Create')]"
-    )
+    CREATE_BUTTON = (By.XPATH, "//button[contains(.,'Create')]")
 
     PROJECT_TABLE = (By.XPATH, "//table")
 
@@ -31,19 +23,19 @@ class ProjectsPage(BasePage):
 
         # wait for modal input
         self.wait.until(
-            EC.visibility_of_element_located(self.PROJECT_TITLE_INPUT)
+            EC.visibility_of_element_located(self.PROJECT_INPUT)
         )
 
-        # enter project name
-        self.find(self.PROJECT_TITLE_INPUT).clear()
-        self.find(self.PROJECT_TITLE_INPUT).send_keys(project_name)
+        field = self.find(self.PROJECT_INPUT)
+        field.clear()
+        field.send_keys(project_name)
 
         # click Create
         self.wait.until(
             EC.element_to_be_clickable(self.CREATE_BUTTON)
         ).click()
 
-        # wait for table reload
+        # wait until table reloads
         self.wait.until(
             EC.visibility_of_element_located(self.PROJECT_TABLE)
         )
