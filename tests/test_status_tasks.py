@@ -33,12 +33,9 @@ def test_task_status_update(driver):
     tasks_page.change_status("in_progress")
     tasks_page.save_task()
 
-    # wait until status badge updates
+    # wait until badge appears again
     WebDriverWait(driver, 20).until(
-        EC.text_to_be_present_in_element(
-            tasks_page.STATUS_BADGE,
-            "Progress"
-        )
+        EC.visibility_of_element_located(tasks_page.STATUS_BADGE)
     )
 
     status_text = tasks_page.get_status().lower()
