@@ -9,16 +9,18 @@ pipeline {
             }
         }
 
-        stage('Setup Python') {
+        stage('Create Virtual Environment') {
             steps {
                 bat 'python -m venv venv'
             }
         }
 
-        stage('Install Requirements') {
+        stage('Install Dependencies') {
             steps {
-                bat 'venv\\Scripts\\pip install --upgrade pip'
-                bat 'venv\\Scripts\\pip install -r requirements.txt'
+                bat '''
+                venv\\Scripts\\python -m pip install --upgrade pip
+                venv\\Scripts\\pip install -r requirements.txt
+                '''
             }
         }
 
