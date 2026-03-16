@@ -6,23 +6,37 @@ from pages.base_page import BasePage
 class ProjectsPage(BasePage):
 
     NEW_PROJECT_BUTTON = (By.XPATH, "//button[contains(.,'New Project')]")
-    PROJECT_NAME_INPUT = (By.XPATH, "//input[contains(@placeholder,'Project')]")
-    SAVE_BUTTON = (By.XPATH, "//button[contains(.,'Save')]")
+
+    PROJECT_NAME_INPUT = (
+        By.XPATH,
+        "//input[contains(@placeholder,'Project') or contains(@name,'title')]"
+    )
+
+    SAVE_BUTTON = (By.XPATH, "//button[contains(.,'Create') or contains(.,'Save')]")
 
     PROJECT_TABLE = (By.XPATH, "//table")
 
     def create_project(self, project_name):
 
-        self.click(self.NEW_PROJECT_BUTTON)
+        # click "+ New Project"
+        self.wait.until(
+            EC.element_to_be_clickable(self.NEW_PROJECT_BUTTON)
+        ).click()
 
+        # wait for modal input
         self.wait.until(
             EC.visibility_of_element_located(self.PROJECT_NAME_INPUT)
         )
 
+        # enter project name
         self.find(self.PROJECT_NAME_INPUT).send_keys(project_name)
 
-        self.click(self.SAVE_BUTTON)
+        # click Save/Create
+        self.wait.until(
+            EC.element_to_be_clickable(self.SAVE_BUTTON)
+        ).click()
 
+        # wait for table refresh
         self.wait.until(
             EC.visibility_of_element_located(self.PROJECT_TABLE)
         )
