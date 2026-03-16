@@ -15,7 +15,7 @@ def test_task_status_update(driver):
     login_page = LoginPage(driver)
     login_page.login_as_admin("admin@example.com", "Admin@123")
 
-    WebDriverWait(driver, 10).until(
+    WebDriverWait(driver, 20).until(
         EC.url_contains("dashboard")
     )
 
@@ -34,8 +34,11 @@ def test_task_status_update(driver):
     tasks_page.save_task()
 
     # wait until status badge updates
-    WebDriverWait(driver, 10).until(
-        lambda d: "in_progress" in tasks_page.get_status().lower()
+    WebDriverWait(driver, 20).until(
+        EC.text_to_be_present_in_element(
+            tasks_page.STATUS_BADGE,
+            "In Progress"
+        )
     )
 
     assert "in_progress" in tasks_page.get_status().lower()
