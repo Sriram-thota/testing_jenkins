@@ -3,28 +3,31 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from pages.base_page import BasePage
 
+
 class ProjectsPage(BasePage):
-    NEW_PROJECT_BUTTON  = (By.XPATH, "//button[contains(.,'New Project')]")
-    PROJECT_INPUT       = (By.XPATH, "//input[@type='text']")
-    DESCRIPTION_INPUT   = (By.XPATH, "//textarea")
-    STATUS_DROPDOWN     = (By.XPATH, "//select")
-    CREATE_BUTTON       = (By.XPATH, "//button[contains(.,'Create')]")
-    SAVE_BUTTON         = (By.XPATH, "//button[contains(.,'Save')]")
+    # ── Locators (using exact IDs from the HTML) ─────────────────────────────
+    NEW_PROJECT_BUTTON  = (By.ID, "projects-new-btn")
+    TITLE_INPUT         = (By.ID, "projects-title-input")
+    DESCRIPTION_INPUT   = (By.ID, "projects-description-input")
+    STATUS_SELECT       = (By.ID, "projects-status-select")
+    SAVE_BUTTON         = (By.ID, "projects-save-btn")
+    CANCEL_BUTTON       = (By.ID, "projects-cancel-btn")
     PROJECT_TABLE       = (By.XPATH, "//table")
 
-    # ── individual step methods (used by test) ──────────────────────────────
+    # ── Individual step methods (called by test) ──────────────────────────────
 
     def click_new_project(self):
         self.wait.until(
             EC.element_to_be_clickable(self.NEW_PROJECT_BUTTON)
         ).click()
+        # wait for modal to appear
         self.wait.until(
-            EC.visibility_of_element_located(self.PROJECT_INPUT)
+            EC.visibility_of_element_located(self.TITLE_INPUT)
         )
 
     def enter_title(self, title):
         field = self.wait.until(
-            EC.visibility_of_element_located(self.PROJECT_INPUT)
+            EC.visibility_of_element_located(self.TITLE_INPUT)
         )
         field.clear()
         field.send_keys(title)
@@ -38,7 +41,7 @@ class ProjectsPage(BasePage):
 
     def select_status(self, status):
         dropdown = self.wait.until(
-            EC.visibility_of_element_located(self.STATUS_DROPDOWN)
+            EC.visibility_of_element_located(self.STATUS_SELECT)
         )
         Select(dropdown).select_by_value(status)
 
@@ -46,21 +49,30 @@ class ProjectsPage(BasePage):
         self.wait.until(
             EC.element_to_be_clickable(self.SAVE_BUTTON)
         ).click()
+        # wait for modal to close and table to reload
+        self.wait.until(
+            EC.invisibility_of_element_located(self.SAVE_BUTTON)
+        )
         self.wait.until(
             EC.visibility_of_element_located(self.PROJECT_TABLE)
         )
 
-    # ── convenience method (bundles all steps) ──────────────────────────────
+    # ── Convenience method (bundles all steps) ────────────────────────────────
 
     def create_project(self, project_name):
         self.click_new_project()
         self.enter_title(project_name)
         self.wait.until(
-            EC.element_to_be_clickable(self.CREATE_BUTTON)
+            EC.element_to_be_clickable(self.SAVE_BUTTON)
         ).click()
+        self.wait.until(
+            EC.invisibility_of_element_located(self.SAVE_BUTTON)
+        )
         self.wait.until(
             EC.visibility_of_element_located(self.PROJECT_TABLE)
         )
+
+    # ── Assertion helper ──────────────────────────────────────────────────────
 
     def is_project_visible(self, project_name):
         rows = self.driver.find_elements(By.XPATH, "//table//tbody//tr")
