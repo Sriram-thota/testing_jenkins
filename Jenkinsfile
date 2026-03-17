@@ -6,7 +6,6 @@ pipeline {
                 git branch: 'master', url: 'https://github.com/Sriram-thota/testing_jenkins.git'
             }
         }
-
         stage('Cleanup Previous Containers') {
             steps {
                 bat '''
@@ -15,13 +14,11 @@ pipeline {
                 '''
             }
         }
-
         stage('Create Virtual Environment') {
             steps {
                 bat 'python -m venv venv'
             }
         }
-
         stage('Install Dependencies') {
             steps {
                 bat '''
@@ -30,7 +27,6 @@ pipeline {
                 '''
             }
         }
-
         stage('Start Selenium Grid') {
             steps {
                 bat 'docker-compose -p testing -f docker/docker-compose.yml up -d'
@@ -52,7 +48,6 @@ pipeline {
                         Start-Sleep -Seconds 3
                         $retries++
                     } while ($retries -lt $maxRetries)
-
                     if (-not $ready) {
                         Write-Host "Selenium Grid did not start in time!"
                         exit 1
@@ -60,20 +55,17 @@ pipeline {
                 '''
             }
         }
-
         stage('Run Tests') {
             steps {
                 bat 'venv\\Scripts\\pytest tests --alluredir=allure-results --junitxml=reports/junit.xml'
             }
         }
-
         stage('Allure Report') {
             steps {
                 allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
             }
         }
     }
-
     post {
         always {
             bat '''
@@ -82,19 +74,11 @@ pipeline {
             '''
             junit allowEmptyResults: true, testResults: 'reports/junit.xml'
         }
+        failure {
+            echo 'Build failed! Check logs above.'
+        }
+        success {
+            echo 'Build succeeded!'
+        }
     }
 }
-```
-
----
-
-### Step 3 — Verify it worked
-
-After the next build, the left panel should show:
-```
-✅ Checkout SCM
-✅ Checkout Code
-✅ Cleanup Previous Containers   ← This MUST appear
-✅ Create Virtual Environment
-✅ Install Dependencies
-✅ Start Selenium Grid
