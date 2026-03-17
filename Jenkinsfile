@@ -9,7 +9,10 @@ pipeline {
 
         stage('Cleanup Previous Containers') {
             steps {
-                bat 'docker-compose -f docker/docker-compose.yml down --remove-orphans'
+                bat '''
+                    docker-compose -p testing -f docker/docker-compose.yml down --remove-orphans
+                    docker rm -f selenium-hub 2>nul || echo "No stale container to remove"
+                '''
             }
         }
 
@@ -22,15 +25,15 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 bat '''
-                venv\\Scripts\\python -m pip install --upgrade pip
-                venv\\Scripts\\pip install -r requirements.txt
+                    venv\\Scripts\\python -m pip install --upgrade pip
+                    venv\\Scripts\\pip install -r requirements.txt
                 '''
             }
         }
 
         stage('Start Selenium Grid') {
             steps {
-                bat 'docker-compose -f docker/docker-compose.yml up -d'
+                bat 'docker-compose -p testing -f docker/docker-compose.yml up -d'
                 powershell '''
                     $maxRetries = 20
                     $retries = 0
@@ -73,11 +76,14 @@ pipeline {
 
     post {
         always {
-            bat 'docker-compose -f docker/docker-compose.yml down --remove-orphans'
+            bat '''
+                docker-compose -p testing -f docker/docker-compose.yml down --remove-orphans
+                docker rm -f selenium-hub 2>nul || echo "Cleanup done"
+            '''
             junit allowEmptyResults: true, testResults: 'reports/junit.xml'
         }
         failure {
-            echo 'Build failed! Check logs above for details.'
+            echo 'Build failed! Check logs above.'
         }
         success {
             echo 'Build succeeded!'
