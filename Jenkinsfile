@@ -10,8 +10,8 @@ pipeline {
         stage('Cleanup Previous Containers') {
             steps {
                 bat '''
-                    docker-compose -p testing -f docker/docker-compose.yml down --remove-orphans
                     docker rm -f selenium-hub 2>nul || echo "No stale container to remove"
+                    docker-compose -p testing -f docker/docker-compose.yml down --remove-orphans
                 '''
             }
         }
@@ -77,16 +77,24 @@ pipeline {
     post {
         always {
             bat '''
-                docker-compose -p testing -f docker/docker-compose.yml down --remove-orphans
                 docker rm -f selenium-hub 2>nul || echo "Cleanup done"
+                docker-compose -p testing -f docker/docker-compose.yml down --remove-orphans
             '''
             junit allowEmptyResults: true, testResults: 'reports/junit.xml'
         }
-        failure {
-            echo 'Build failed! Check logs above.'
-        }
-        success {
-            echo 'Build succeeded!'
-        }
     }
 }
+```
+
+---
+
+### Step 3 — Verify it worked
+
+After the next build, the left panel should show:
+```
+✅ Checkout SCM
+✅ Checkout Code
+✅ Cleanup Previous Containers   ← This MUST appear
+✅ Create Virtual Environment
+✅ Install Dependencies
+✅ Start Selenium Grid
