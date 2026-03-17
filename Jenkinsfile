@@ -1,11 +1,15 @@
 pipeline {
     agent any
-
     stages {
-
         stage('Checkout Code') {
             steps {
                 git branch: 'master', url: 'https://github.com/Sriram-thota/testing_jenkins.git'
+            }
+        }
+
+        stage('Cleanup Previous Containers') {
+            steps {
+                bat 'docker-compose -f docker/docker-compose.yml down --remove-orphans'
             }
         }
 
@@ -23,27 +27,33 @@ pipeline {
                 '''
             }
         }
+
         stage('Start Selenium Grid') {
             steps {
                 bat 'docker-compose -f docker/docker-compose.yml up -d'
                 powershell '''
                     $maxRetries = 20
                     $retries = 0
+                    $ready = $false
                     do {
                         try {
                             $response = Invoke-RestMethod -Uri "http://localhost:4444/wd/hub/status" -Method Get
                             if ($response.value.ready -eq $true) {
                                 Write-Host "Selenium Grid is ready!"
-                                exit 0
+                                $ready = $true
+                                break
                             }
                         } catch {
-                            Write-Host "Waiting for Selenium Grid..."
+                            Write-Host "Waiting for Selenium Grid... attempt $($retries + 1)/$maxRetries"
                         }
                         Start-Sleep -Seconds 3
                         $retries++
                     } while ($retries -lt $maxRetries)
-                    Write-Host "Selenium Grid did not start in time!"
-                    exit 1
+
+                    if (-not $ready) {
+                        Write-Host "Selenium Grid did not start in time!"
+                        exit 1
+                    }
                 '''
             }
         }
@@ -56,17 +66,21 @@ pipeline {
 
         stage('Allure Report') {
             steps {
-                powershell '''
-                allure serve allure-results
-                '''
+                allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
             }
         }
-
     }
 
     post {
         always {
-            junit 'reports/junit.xml'
+            bat 'docker-compose -f docker/docker-compose.yml down --remove-orphans'
+            junit allowEmptyResults: true, testResults: 'reports/junit.xml'
+        }
+        failure {
+            echo 'Build failed! Check logs above for details.'
+        }
+        success {
+            echo 'Build succeeded!'
         }
     }
 }
